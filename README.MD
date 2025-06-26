@@ -4,15 +4,31 @@
 
 ### Entities
 
-
+* **Client** – created account of a person using the system.
+* **Room** – lodging option available for reservation.
+* **Reservation** – booking made by a client for a room and dates.
+* **Payment** – money transfer linked to a reservation.
+* **Wallet** – electronic wallet tied to a client and holding a balance.
 
 ### Value Objects
 
-
+* **Money** – amount coupled with a currency.
+* **Currency** – enumeration of the allowed currencies.
+* **RoomType** – standard, superior or suite.
 
 ### How to run the code & tests
 
 ```bash
+# data is stored in database.json in the project root
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# initialize the JSON database
+python main.py init-db
+
+# run the automated tests
+python -m unittest discover -s tests
 ```
 
 ## Strategic Design
