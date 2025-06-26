@@ -78,3 +78,44 @@ graph TD
 * **Core:** Reservation Management
 * **Supporting:** Room Catalog, Wallet Operations
 * **Generic:** Account Management
+
+## Preloaded rooms
+
+`init-db` creates three rooms in the catalog:
+
+* **Standard room** – 50€ per night
+  * Single bed
+  * Wifi
+  * TV
+* **Superior room** – 100€ per night
+  * Double bed
+  * Wifi
+  * Flat screen TV
+  * Minibar
+  * Air conditioner
+* **Suite** – 200€ per night
+  * Double bed
+  * Wifi
+  * Flat screen TV
+  * Minibar
+  * Air conditioner
+  * Bathtub
+  * Terrace
+
+The wallet balance is always stored in euros. A conversion will therefore be applied if a client pays in another currency.
+
+## Example commands with Tom
+
+```bash
+# initialize the database and rooms
+python3 main.py init-db
+
+# list all available rooms
+python3 main.py list-rooms
+
+# register Tom as a client
+python3 main.py add-client --name "Tom" --email tom@example.com --phone 0600000000
+
+# Tom reserves the standard room for two nights starting on 2025-06-01
+python3 main.py reserve --client 1 --room 1 --check-in 2025-06-01 --nights 2 --total 100
+```

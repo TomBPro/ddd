@@ -18,9 +18,10 @@ class DBTestCase(unittest.TestCase):
         with open(db.DB_PATH, 'r', encoding='utf-8') as f:
             data = json.load(f)
         self.assertEqual(data['clients'], [])
-        self.assertEqual(data['rooms'], [])
+        self.assertEqual(len(data['rooms']), 3)
         self.assertEqual(data['reservations'], [])
         self.assertEqual(data['auto_id']['client'], 0)
+        self.assertEqual(data['auto_id']['room'], 3)
 
 
 class CLITestCase(unittest.TestCase):
@@ -41,6 +42,9 @@ class CLITestCase(unittest.TestCase):
         output = self.run_cli(['init-db'])
         self.assertIn('Database initialized', output)
         self.assertTrue(os.path.exists(db.DB_PATH))
+        with open(db.DB_PATH, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        self.assertEqual(len(data['rooms']), 3)
 
     def test_cli_add_client(self):
         self.run_cli(['init-db'])
@@ -53,15 +57,14 @@ class CLITestCase(unittest.TestCase):
     def test_cli_add_room(self):
         self.run_cli(['init-db'])
         output = self.run_cli(['add-room', '--type', 'standard', '--price', '50'])
-        self.assertIn('Room added with id 1', output)
+        self.assertIn('Room added with id 4', output)
         with open(db.DB_PATH, 'r', encoding='utf-8') as f:
             data = json.load(f)
-        self.assertEqual(len(data['rooms']), 1)
+        self.assertEqual(len(data['rooms']), 4)
 
     def test_cli_reserve(self):
         self.run_cli(['init-db'])
         self.run_cli(['add-client', '--name', 'Bob', '--email', 'b@example.com', '--phone', '555'])
-        self.run_cli(['add-room', '--type', 'suite', '--price', '100'])
         output = self.run_cli([
             'reserve', '--client', '1', '--room', '1',
             '--check-in', '2025-01-01', '--nights', '2', '--total', '200'
@@ -70,3 +73,8 @@ class CLITestCase(unittest.TestCase):
         with open(db.DB_PATH, 'r', encoding='utf-8') as f:
             data = json.load(f)
         self.assertEqual(len(data['reservations']), 1)
+
+    def test_cli_list_rooms(self):
+        self.run_cli(['init-db'])
+        output = self.run_cli(['list-rooms'])
+        self.assertIn('1: standard', output)

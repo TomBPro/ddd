@@ -23,6 +23,12 @@ def cmd_reserve(args):
     print(f"Reservation created with id {rid}")
 
 
+def cmd_list_rooms(_args):
+    rooms = db.list_rooms()
+    for r in rooms:
+        print(f"{r['id']}: {r['room_type']} - {r['price']}€")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="XYZ Hotel CLI")
     sub = parser.add_subparsers(dest="command")
@@ -40,6 +46,9 @@ def main(argv=None):
     add_room_p.add_argument("--type", required=True)
     add_room_p.add_argument("--price", type=float, required=True)
     add_room_p.set_defaults(func=cmd_add_room)
+
+    list_rooms_p = sub.add_parser("list-rooms")
+    list_rooms_p.set_defaults(func=cmd_list_rooms)
 
     res_p = sub.add_parser("reserve")
     res_p.add_argument("--client", type=int, required=True)

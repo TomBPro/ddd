@@ -9,9 +9,28 @@ def init_schema():
     if not os.path.exists(DB_PATH):
         data = {
             'clients': [],
-            'rooms': [],
+            'rooms': [
+                {
+                    'id': 1,
+                    'room_type': 'standard',
+                    'price': 50,
+                    'description': 'Single bed, Wifi, TV'
+                },
+                {
+                    'id': 2,
+                    'room_type': 'superior',
+                    'price': 100,
+                    'description': 'Double bed, Wifi, flat screen TV, minibar, air conditioner'
+                },
+                {
+                    'id': 3,
+                    'room_type': 'suite',
+                    'price': 200,
+                    'description': 'Double bed, Wifi, flat screen TV, minibar, air conditioner, bathtub, terrace'
+                },
+            ],
             'reservations': [],
-            'auto_id': {'client': 0, 'room': 0, 'reservation': 0}
+            'auto_id': {'client': 0, 'room': 3, 'reservation': 0}
         }
         with open(DB_PATH, 'w', encoding='utf-8') as f:
             json.dump(data, f)
@@ -63,3 +82,9 @@ def add_reservation(client_id: int, room_id: int, check_in: str, nights: int, to
     })
     _save(data)
     return rid
+
+
+def list_rooms() -> list:
+    init_schema()
+    data = _load()
+    return data['rooms']
