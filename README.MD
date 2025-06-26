@@ -20,15 +20,15 @@
 
 ```bash
 # data is stored in database.json in the project root
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
 # initialize the JSON database
-python main.py init-db
+python3 main.py init-db
 
 # run the automated tests
-python -m unittest discover -s tests
+python3 -m unittest discover -s tests
 ```
 
 ## Strategic Design
