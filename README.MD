@@ -1,11 +1,23 @@
 # Rendu
 
-## How to run the code & tests
+## Tactical Design
+
+### Entities
+
+
+
+### Value Objects
+
+
+
+### How to run the code & tests
 
 ```bash
 ```
 
 ## Strategic Design
+
+> Please install [Markdown Preview Mermaid Support](https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid) to visualize the diagrams in VS Code.
 
 ### Ubiquitous language
 
