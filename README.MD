@@ -111,10 +111,10 @@ All features of the application are exposed through `main.py`:
 ```bash
 python3 main.py init-db                    # initialize the database
 python3 main.py add-client --name NAME --email EMAIL --phone PHONE
-python3 main.py add-room --type TYPE --price PRICE
+python3 main.py add-room --type TYPE --price PRICE --description TEXT
 python3 main.py list-rooms                 # display all rooms
 python3 main.py deposit --client ID --amount AMOUNT [--currency CUR]
-python3 main.py reserve --client ID --room ID --check-in DATE --nights N --total TOTAL
+python3 main.py reserve --client ID --room ID --check-in DATE --nights N
 python3 main.py confirm --reservation ID
 python3 main.py cancel --reservation ID
 ```
@@ -135,5 +135,5 @@ python3 main.py add-client --name "Tom" --email tom@example.com --phone 06000000
 python3 main.py deposit --client 1 --amount 120 --currency USD
 
 # Tom reserves the standard room for two nights starting on 2025-06-01
-python3 main.py reserve --client 1 --room 1 --check-in 2025-06-01 --nights 2 --total 100
+python3 main.py reserve --client 1 --room 1 --check-in 2025-06-01 --nights 2
 ```

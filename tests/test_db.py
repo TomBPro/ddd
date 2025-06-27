@@ -62,7 +62,7 @@ class CLITestCase(unittest.TestCase):
 
     def test_cli_add_room(self):
         self.run_cli(['init-db'])
-        output = self.run_cli(['add-room', '--type', 'standard', '--price', '50'])
+        output = self.run_cli(['add-room', '--type', 'standard', '--price', '50', '--description', 'Nice room'])
         self.assertIn('Room added with id 4', output)
         with open(db.DB_PATH, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -74,13 +74,13 @@ class CLITestCase(unittest.TestCase):
         self.run_cli(['deposit', '--client', '1', '--amount', '120', '--currency', 'USD'])
         output = self.run_cli([
             'reserve', '--client', '1', '--room', '1',
-            '--check-in', '2025-01-01', '--nights', '2', '--total', '200'
+            '--check-in', '2025-01-01', '--nights', '2'
         ])
         self.assertIn('Reservation created with id 1', output)
         with open(db.DB_PATH, 'r', encoding='utf-8') as f:
             data = json.load(f)
         self.assertEqual(len(data['reservations']), 1)
-        self.assertAlmostEqual(data['clients'][0]['wallet'], 8)
+        self.assertAlmostEqual(data['clients'][0]['wallet'], 58)
 
     def test_cli_confirm_and_cancel(self):
         self.run_cli(['init-db'])
@@ -88,20 +88,20 @@ class CLITestCase(unittest.TestCase):
         self.run_cli(['deposit', '--client', '1', '--amount', '200', '--currency', 'EUR'])
         self.run_cli([
             'reserve', '--client', '1', '--room', '1',
-            '--check-in', '2025-01-01', '--nights', '2', '--total', '200'
+            '--check-in', '2025-01-01', '--nights', '2'
         ])
         output = self.run_cli(['confirm', '--reservation', '1'])
         self.assertIn('confirmed', output)
         with open(db.DB_PATH, 'r', encoding='utf-8') as f:
             data = json.load(f)
         self.assertTrue(data['reservations'][0]['confirmed'])
-        self.assertEqual(data['clients'][0]['wallet'], 0)
+        self.assertEqual(data['clients'][0]['wallet'], 100)
         output = self.run_cli(['cancel', '--reservation', '1'])
         self.assertIn('cancelled', output)
         with open(db.DB_PATH, 'r', encoding='utf-8') as f:
             data = json.load(f)
         self.assertEqual(len(data['reservations']), 0)
-        self.assertEqual(data['clients'][0]['wallet'], 0)
+        self.assertEqual(data['clients'][0]['wallet'], 100)
 
     def test_cli_deposit_conversion(self):
         self.run_cli(['init-db'])
@@ -122,10 +122,10 @@ class CLITestCase(unittest.TestCase):
         self.run_cli(['deposit', '--client', '1', '--amount', '300', '--currency', 'EUR'])
         self.run_cli([
             'reserve', '--client', '1', '--room', '1',
-            '--check-in', '2025-06-01', '--nights', '2', '--total', '100'
+            '--check-in', '2025-06-01', '--nights', '2'
         ])
         output = self.run_cli([
             'reserve', '--client', '1', '--room', '1',
-            '--check-in', '2025-06-02', '--nights', '2', '--total', '100'
+            '--check-in', '2025-06-02', '--nights', '2'
         ])
         self.assertIn('room not available', output)

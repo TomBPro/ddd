@@ -80,6 +80,8 @@ def deposit(client_id: int, amount: float, currency: str = 'EUR') -> float:
     client = next((c for c in data['clients'] if c['id'] == client_id), None)
     if client is None:
         raise ValueError('client not found')
+    if 'wallet' not in client:
+        raise ValueError('client wallet not initialized')
     rate = RATES_TO_EUR.get(currency.upper())
     if rate is None:
         raise ValueError('unsupported currency')
@@ -88,17 +90,17 @@ def deposit(client_id: int, amount: float, currency: str = 'EUR') -> float:
     return client['wallet']
 
 
-def add_room(room_type: str, price: float) -> int:
+def add_room(room_type: str, price: float, description: str) -> int:
     init_schema()
     data = _load()
     data['auto_id']['room'] += 1
     rid = data['auto_id']['room']
-    data['rooms'].append({'id': rid, 'room_type': room_type, 'price': price})
+    data['rooms'].append({'id': rid, 'room_type': room_type, 'price': price, 'description': description})
     _save(data)
     return rid
 
 
-def add_reservation(client_id: int, room_id: int, check_in: str, nights: int, total: float) -> int:
+def add_reservation(client_id: int, room_id: int, check_in: str, nights: int) -> int:
     init_schema()
     data = _load()
     client = next((c for c in data['clients'] if c['id'] == client_id), None)
@@ -118,6 +120,10 @@ def add_reservation(client_id: int, room_id: int, check_in: str, nights: int, to
         if new_start < existing_end and new_end > existing_start:
             raise ValueError('room not available for the selected dates')
 
+    room = next((r for r in data['rooms'] if r['id'] == room_id), None)
+    if room is None:
+        raise ValueError('room not found')
+    total = room['price'] * nights
     deposit_amount = total / 2
     if client['wallet'] < deposit_amount:
         raise ValueError('insufficient funds')
@@ -154,6 +160,8 @@ def confirm_reservation(reservation_id: int) -> None:
             client = next((c for c in data['clients'] if c['id'] == r['client_id']), None)
             if client is None:
                 raise ValueError('client not found')
+            if 'wallet' not in client:
+                raise ValueError('client wallet not initialized')
             remaining = r['total'] / 2
             if client['wallet'] < remaining:
                 raise ValueError('insufficient funds')

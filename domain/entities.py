@@ -29,6 +29,7 @@ class Client:
 class Room:
     room_type: str
     price_per_night: Money
+    description: str
     id: int = None
 
     def __post_init__(self):

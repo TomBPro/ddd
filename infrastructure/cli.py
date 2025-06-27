@@ -18,13 +18,13 @@ def cmd_add_client(args):
 
 
 def cmd_add_room(args):
-    rid = db.add_room(args.type, args.price)
+    rid = db.add_room(args.type, args.price, args.description)
     print(f"Room added with id {rid}")
 
 
 def cmd_reserve(args):
     try:
-        rid = db.add_reservation(args.client, args.room, args.check_in, args.nights, args.total)
+        rid = db.add_reservation(args.client, args.room, args.check_in, args.nights)
         print(f"Reservation created with id {rid}")
     except ValueError as e:
         print(str(e))
@@ -76,6 +76,7 @@ def main(argv=None):
     add_room_p = sub.add_parser("add-room")
     add_room_p.add_argument("--type", required=True)
     add_room_p.add_argument("--price", type=float, required=True)
+    add_room_p.add_argument("--description", required=True)
     add_room_p.set_defaults(func=cmd_add_room)
 
     list_rooms_p = sub.add_parser("list-rooms")
@@ -86,7 +87,6 @@ def main(argv=None):
     res_p.add_argument("--room", type=int, required=True)
     res_p.add_argument("--check-in", required=True)
     res_p.add_argument("--nights", type=int, required=True)
-    res_p.add_argument("--total", type=float, required=True)
     res_p.set_defaults(func=cmd_reserve)
 
     confirm_p = sub.add_parser("confirm")
