@@ -19,6 +19,7 @@ class Client:
     full_name: str
     email: str
     phone: str
+    wallet: float = 0.0
     id: int = None
 
     def __post_init__(self):
