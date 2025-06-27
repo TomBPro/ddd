@@ -38,7 +38,8 @@ def init_schema():
                 },
             ],
             'reservations': [],
-            'auto_id': {'client': 0, 'room': 3, 'reservation': 0}
+            'payments': [],
+            'auto_id': {'client': 0, 'room': 3, 'reservation': 0, 'payment': 0}
         }
         with open(DB_PATH, 'w', encoding='utf-8') as f:
             json.dump(data, f)
@@ -52,6 +53,21 @@ def _load() -> dict:
 def _save(data: dict) -> None:
     with open(DB_PATH, 'w', encoding='utf-8') as f:
         json.dump(data, f)
+
+
+def _record_payment(data: dict, client_id: int, amount: float, currency: str,
+                    kind: str, reservation_id: int | None = None) -> None:
+    data['auto_id']['payment'] += 1
+    pid = data['auto_id']['payment']
+    data.setdefault('payments', [])
+    data['payments'].append({
+        'id': pid,
+        'client_id': client_id,
+        'reservation_id': reservation_id,
+        'amount': amount,
+        'currency': currency,
+        'type': kind,
+    })
 
 
 def add_client(full_name: str, email: str, phone: str) -> int:
@@ -86,6 +102,7 @@ def deposit(client_id: int, amount: float, currency: str = 'EUR') -> float:
     if rate is None:
         raise ValueError('unsupported currency')
     client['wallet'] += amount * rate
+    _record_payment(data, client_id, amount, currency.upper(), 'deposit')
     _save(data)
     return client['wallet']
 
@@ -127,9 +144,11 @@ def add_reservation(client_id: int, room_id: int, check_in: str, nights: int) ->
     deposit_amount = total / 2
     if client['wallet'] < deposit_amount:
         raise ValueError('insufficient funds')
-    client['wallet'] -= deposit_amount
     data['auto_id']['reservation'] += 1
     rid = data['auto_id']['reservation']
+    client['wallet'] -= deposit_amount
+    _record_payment(data, client_id, deposit_amount, 'EUR',
+                    'reservation_deposit', rid)
     data['reservations'].append({
         'id': rid,
         'client_id': client_id,
@@ -166,6 +185,8 @@ def confirm_reservation(reservation_id: int) -> None:
             if client['wallet'] < remaining:
                 raise ValueError('insufficient funds')
             client['wallet'] -= remaining
+            _record_payment(data, client['id'], remaining, 'EUR',
+                            'reservation_balance', r['id'])
             r['confirmed'] = True
             _save(data)
             return

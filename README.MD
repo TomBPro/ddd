@@ -4,31 +4,24 @@
 
 ### Entities
 
-* **Client** – created account of a person using the system.
+* **Client** – person registered in the system. Holds contact details and a wallet balance.
 * **Room** – lodging option available for reservation.
 * **Reservation** – booking made by a client for a room and dates.
-* **Payment** – money transfer linked to a reservation.
-* **Wallet** – electronic wallet tied to a client and holding a balance.
+* **Payment** – record of a money transaction (deposit or booking balance).
 
 ### Value Objects
 
 * **Money** – amount coupled with a currency.
 * **Currency** – enumeration of the allowed currencies.
-* **RoomType** – standard, superior or suite.
+* **RoomType** – allowed room categories: standard, superior, suite and deluxe.
 
 ### How to run the code & tests
 
 ```bash
 # data is stored in database.json in the project root
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+python3 main.py init-db         # initialize the JSON database
 
-# initialize the JSON database
-python3 main.py init-db
-
-# run the automated tests
-python3 -m unittest discover -s tests
+python3 -m unittest discover -s tests  # run the automated tests
 ```
 
 ## Strategic Design
@@ -41,9 +34,9 @@ python3 -m unittest discover -s tests
 * **Account** – personal data containing full name, email and phone.
 * **Wallet** – electronic wallet tied to a client; holds a balance in euros.
 * **Currency** – allowed currencies: EUR, USD, GBP, JPY, CHF.
-* **Room** – lodging option; standard, superior or suite with price per night.
+* **Room** – lodging option; types include standard, superior, suite and deluxe with price per night.
 * **Reservation** – booking of one or more rooms from a check-in date for a number of nights.
-* **Payment** – debit from the wallet for a reservation.
+* **Payment** – record of any wallet transaction (deposit or booking payment).
 
 ### Bounded Contexts
 
@@ -125,15 +118,28 @@ python3 main.py cancel --reservation ID
 # initialize the database and rooms
 python3 main.py init-db
 
+# add a new deluxe room
+python3 main.py add-room --type "deluxe" --price 250 \
+    --description "King bed, jacuzzi, sea view"
+
 # list all available rooms
 python3 main.py list-rooms
 
 # register Tom as a client
 python3 main.py add-client --name "Tom" --email tom@example.com --phone 0600000000
 
-# add funds to Tom's wallet in dollars
-python3 main.py deposit --client 1 --amount 120 --currency USD
+# add funds to Tom's wallet in euros
+python3 main.py deposit --client 1 --amount 500 --currency EUR
 
 # Tom reserves the standard room for two nights starting on 2025-06-01
 python3 main.py reserve --client 1 --room 1 --check-in 2025-06-01 --nights 2
+
+# confirm the reservation
+python3 main.py confirm --reservation 1
+
+# Tom also books the deluxe room for three nights starting on 2025-06-10
+python3 main.py reserve --client 1 --room 4 --check-in 2025-06-10 --nights 3
+
+# cancel the second reservation
+python3 main.py cancel --reservation 2
 ```

@@ -20,8 +20,10 @@ class DBTestCase(unittest.TestCase):
         self.assertEqual(data['clients'], [])
         self.assertEqual(len(data['rooms']), 3)
         self.assertEqual(data['reservations'], [])
+        self.assertEqual(data['payments'], [])
         self.assertEqual(data['auto_id']['client'], 0)
         self.assertEqual(data['auto_id']['room'], 3)
+        self.assertEqual(data['auto_id']['payment'], 0)
 
 
 class CLITestCase(unittest.TestCase):
@@ -96,6 +98,9 @@ class CLITestCase(unittest.TestCase):
             data = json.load(f)
         self.assertTrue(data['reservations'][0]['confirmed'])
         self.assertEqual(data['clients'][0]['wallet'], 100)
+        self.assertEqual(len(data['payments']), 3)
+        self.assertEqual(data['payments'][1]['type'], 'reservation_deposit')
+        self.assertEqual(data['payments'][2]['type'], 'reservation_balance')
         output = self.run_cli(['cancel', '--reservation', '1'])
         self.assertIn('cancelled', output)
         with open(db.DB_PATH, 'r', encoding='utf-8') as f:
@@ -110,6 +115,18 @@ class CLITestCase(unittest.TestCase):
         with open(db.DB_PATH, 'r', encoding='utf-8') as f:
             data = json.load(f)
         self.assertAlmostEqual(data['clients'][0]['wallet'], 90)
+        self.assertEqual(len(data['payments']), 1)
+        self.assertEqual(data['payments'][0]['type'], 'deposit')
+
+    def test_cli_deposit_invalid_currency(self):
+        self.run_cli(['init-db'])
+        self.run_cli(['add-client', '--name', 'Bob', '--email', 'b@example.com', '--phone', '555'])
+        output = self.run_cli(['deposit', '--client', '1', '--amount', '50', '--currency', 'XXX'])
+        self.assertIn('unsupported currency', output)
+        with open(db.DB_PATH, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        self.assertEqual(data['clients'][0]['wallet'], 0)
+        self.assertEqual(len(data['payments']), 0)
 
     def test_cli_list_rooms(self):
         self.run_cli(['init-db'])
