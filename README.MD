@@ -116,6 +116,9 @@ python3 main.py list-rooms
 # register Tom as a client
 python3 main.py add-client --name "Tom" --email tom@example.com --phone 0600000000
 
+# add funds to Tom's wallet in dollars
+python3 main.py deposit --client 1 --amount 120 --currency USD
+
 # Tom reserves the standard room for two nights starting on 2025-06-01
 python3 main.py reserve --client 1 --room 1 --check-in 2025-06-01 --nights 2 --total 100
 ```

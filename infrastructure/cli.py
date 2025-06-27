@@ -9,7 +9,11 @@ def cmd_init(_args):
 
 
 def cmd_add_client(args):
-    cid = db.add_client(args.name, args.email, args.phone)
+    try:
+        cid = db.add_client(args.name, args.email, args.phone)
+    except ValueError as e:
+        print(str(e))
+        return
     print(f"Client added with id {cid}")
 
 
@@ -26,7 +30,31 @@ def cmd_reserve(args):
 def cmd_list_rooms(_args):
     rooms = db.list_rooms()
     for r in rooms:
-        print(f"{r['id']}: {r['room_type']} - {r['price']}€")
+        print(f"{r['id']}: {r['room_type']} - {r['price']}€ - {r['description']}")
+
+
+def cmd_confirm(args):
+    try:
+        db.confirm_reservation(args.reservation)
+        print(f"Reservation {args.reservation} confirmed")
+    except ValueError as e:
+        print(str(e))
+
+
+def cmd_cancel(args):
+    try:
+        db.cancel_reservation(args.reservation)
+        print(f"Reservation {args.reservation} cancelled")
+    except ValueError as e:
+        print(str(e))
+
+
+def cmd_deposit(args):
+    try:
+        balance = db.deposit(args.client, args.amount, args.currency)
+        print(f"New balance: {balance:.2f} EUR")
+    except ValueError as e:
+        print(str(e))
 
 
 def main(argv=None):
@@ -57,6 +85,20 @@ def main(argv=None):
     res_p.add_argument("--nights", type=int, required=True)
     res_p.add_argument("--total", type=float, required=True)
     res_p.set_defaults(func=cmd_reserve)
+
+    confirm_p = sub.add_parser("confirm")
+    confirm_p.add_argument("--reservation", type=int, required=True)
+    confirm_p.set_defaults(func=cmd_confirm)
+
+    cancel_p = sub.add_parser("cancel")
+    cancel_p.add_argument("--reservation", type=int, required=True)
+    cancel_p.set_defaults(func=cmd_cancel)
+
+    deposit_p = sub.add_parser("deposit")
+    deposit_p.add_argument("--client", type=int, required=True)
+    deposit_p.add_argument("--amount", type=float, required=True)
+    deposit_p.add_argument("--currency", default="EUR")
+    deposit_p.set_defaults(func=cmd_deposit)
 
     args = parser.parse_args(argv)
     if hasattr(args, "func"):

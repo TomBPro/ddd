@@ -1,6 +1,14 @@
 import json
 import os
 
+RATES_TO_EUR = {
+    'EUR': 1.0,
+    'USD': 0.9,
+    'GBP': 1.15,
+    'JPY': 0.007,
+    'CHF': 1.0,
+}
+
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'database.json')
 
 
@@ -47,13 +55,37 @@ def _save(data: dict) -> None:
 
 
 def add_client(full_name: str, email: str, phone: str) -> int:
+    """Add a new client if the email is not already registered."""
     init_schema()
     data = _load()
+    if any(c['email'] == email for c in data['clients']):
+        raise ValueError("client already exists")
     data['auto_id']['client'] += 1
     cid = data['auto_id']['client']
-    data['clients'].append({'id': cid, 'full_name': full_name, 'email': email, 'phone': phone})
+    data['clients'].append({
+        'id': cid,
+        'full_name': full_name,
+        'email': email,
+        'phone': phone,
+        'wallet': 0.0,
+    })
     _save(data)
     return cid
+
+
+def deposit(client_id: int, amount: float, currency: str = 'EUR') -> float:
+    """Credit a client's wallet and return the new balance."""
+    init_schema()
+    data = _load()
+    client = next((c for c in data['clients'] if c['id'] == client_id), None)
+    if client is None:
+        raise ValueError('client not found')
+    rate = RATES_TO_EUR.get(currency.upper())
+    if rate is None:
+        raise ValueError('unsupported currency')
+    client['wallet'] += amount * rate
+    _save(data)
+    return client['wallet']
 
 
 def add_room(room_type: str, price: float) -> int:
@@ -69,6 +101,13 @@ def add_room(room_type: str, price: float) -> int:
 def add_reservation(client_id: int, room_id: int, check_in: str, nights: int, total: float) -> int:
     init_schema()
     data = _load()
+    client = next((c for c in data['clients'] if c['id'] == client_id), None)
+    if client is None:
+        raise ValueError('client not found')
+    deposit_amount = total / 2
+    if client['wallet'] < deposit_amount:
+        raise ValueError('insufficient funds')
+    client['wallet'] -= deposit_amount
     data['auto_id']['reservation'] += 1
     rid = data['auto_id']['reservation']
     data['reservations'].append({
@@ -88,3 +127,35 @@ def list_rooms() -> list:
     init_schema()
     data = _load()
     return data['rooms']
+
+
+def confirm_reservation(reservation_id: int) -> None:
+    """Mark an existing reservation as confirmed."""
+    init_schema()
+    data = _load()
+    for r in data['reservations']:
+        if r['id'] == reservation_id:
+            if r['confirmed']:
+                return
+            client = next((c for c in data['clients'] if c['id'] == r['client_id']), None)
+            if client is None:
+                raise ValueError('client not found')
+            remaining = r['total'] / 2
+            if client['wallet'] < remaining:
+                raise ValueError('insufficient funds')
+            client['wallet'] -= remaining
+            r['confirmed'] = True
+            _save(data)
+            return
+    raise ValueError("reservation not found")
+
+
+def cancel_reservation(reservation_id: int) -> None:
+    """Cancel (delete) an existing reservation."""
+    init_schema()
+    data = _load()
+    before = len(data['reservations'])
+    data['reservations'] = [r for r in data['reservations'] if r['id'] != reservation_id]
+    if len(data['reservations']) == before:
+        raise ValueError("reservation not found")
+    _save(data)
