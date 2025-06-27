@@ -115,3 +115,17 @@ class CLITestCase(unittest.TestCase):
         self.run_cli(['init-db'])
         output = self.run_cli(['list-rooms'])
         self.assertIn('Single bed', output)
+
+    def test_cli_reserve_conflict(self):
+        self.run_cli(['init-db'])
+        self.run_cli(['add-client', '--name', 'Alice', '--email', 'a@example.com', '--phone', '123'])
+        self.run_cli(['deposit', '--client', '1', '--amount', '300', '--currency', 'EUR'])
+        self.run_cli([
+            'reserve', '--client', '1', '--room', '1',
+            '--check-in', '2025-06-01', '--nights', '2', '--total', '100'
+        ])
+        output = self.run_cli([
+            'reserve', '--client', '1', '--room', '1',
+            '--check-in', '2025-06-02', '--nights', '2', '--total', '100'
+        ])
+        self.assertIn('room not available', output)

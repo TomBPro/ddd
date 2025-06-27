@@ -104,6 +104,21 @@ graph TD
 
 The wallet balance is always stored in euros. A conversion will therefore be applied if a client pays in another currency.
 
+## CLI commands
+
+All features of the application are exposed through `main.py`:
+
+```bash
+python3 main.py init-db                    # initialize the database
+python3 main.py add-client --name NAME --email EMAIL --phone PHONE
+python3 main.py add-room --type TYPE --price PRICE
+python3 main.py list-rooms                 # display all rooms
+python3 main.py deposit --client ID --amount AMOUNT [--currency CUR]
+python3 main.py reserve --client ID --room ID --check-in DATE --nights N --total TOTAL
+python3 main.py confirm --reservation ID
+python3 main.py cancel --reservation ID
+```
+
 ## Example commands with Tom
 
 ```bash

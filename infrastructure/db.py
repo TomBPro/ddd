@@ -104,6 +104,20 @@ def add_reservation(client_id: int, room_id: int, check_in: str, nights: int, to
     client = next((c for c in data['clients'] if c['id'] == client_id), None)
     if client is None:
         raise ValueError('client not found')
+    if 'wallet' not in client:
+        raise ValueError('client wallet not initialized')
+
+    from datetime import datetime, timedelta
+    new_start = datetime.fromisoformat(check_in)
+    new_end = new_start + timedelta(days=nights)
+    for r in data['reservations']:
+        if r['room_id'] != room_id:
+            continue
+        existing_start = datetime.fromisoformat(r['check_in'])
+        existing_end = existing_start + timedelta(days=r['nights'])
+        if new_start < existing_end and new_end > existing_start:
+            raise ValueError('room not available for the selected dates')
+
     deposit_amount = total / 2
     if client['wallet'] < deposit_amount:
         raise ValueError('insufficient funds')

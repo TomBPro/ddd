@@ -23,8 +23,11 @@ def cmd_add_room(args):
 
 
 def cmd_reserve(args):
-    rid = db.add_reservation(args.client, args.room, args.check_in, args.nights, args.total)
-    print(f"Reservation created with id {rid}")
+    try:
+        rid = db.add_reservation(args.client, args.room, args.check_in, args.nights, args.total)
+        print(f"Reservation created with id {rid}")
+    except ValueError as e:
+        print(str(e))
 
 
 def cmd_list_rooms(_args):
